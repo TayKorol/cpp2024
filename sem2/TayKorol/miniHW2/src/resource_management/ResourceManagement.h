@@ -20,8 +20,10 @@ namespace Textures {
         Texture_Snow,
         Texture_Water,
         Texture_Hide,
-        Texture_Soup
+        Texture_Soup,
+        Texture_EvilGuy
     };
+
     static ID getTileTexture(std::mt19937 &gen) {
         static const std::vector<ID> textures = {
                 ID::Texture_Grass,
@@ -38,7 +40,22 @@ namespace Textures {
         return textures[dist(gen)];
     }
 }
+namespace Fonts {
+    enum class ID {
+        Arial
+    };
+}
 
+
+template<typename T>
+concept HasLoadFromFile = requires(T &t, const std::string &path) {
+    { t.loadFromFile(path) } -> std::convertible_to<bool>;
+};
+
+template<typename T>
+concept HasOpenFromFile = requires(T &t, const std::string &path) {
+    { t.openFromFile(path) } -> std::convertible_to<bool>;
+};
 
 
 template<typename Resource, typename ID>
@@ -53,14 +70,30 @@ public:
     }
 
     void loadFromPath(ID id, const std::string &path) {
-        std::unique_ptr<sf::Texture> texture(new sf::Texture());
-        if (!texture->loadFromFile(path)) {
+        std::unique_ptr<Resource> resource(new Resource());
+
+
+        sf::Texture texture;
+        sf::Font font;
+
+        if (!loaded(path, resource)) {
             throw std::runtime_error("resourceMap::load - Failed to load " + path);
         }
         assert(resourceMap.find(id) == resourceMap.end());
         resourceMap.insert(
-                std::make_pair(id, std::move(texture)));
+                std::make_pair(id, std::move(resource)));
     }
+
+    bool loaded(const std::string &path,
+                const std::unique_ptr<Resource> &resource) const requires HasLoadFromFile<Resource> {
+        return resource->loadFromFile(path);
+    }
+
+    bool loaded(const std::string &path,
+                const std::unique_ptr<Resource> &resource) const requires HasOpenFromFile<Resource> {
+        return resource->openFromFile(path);
+    }
+
 
     [[nodiscard]] const Resource &get(ID id) const {
         auto item = resourceMap.find(id);

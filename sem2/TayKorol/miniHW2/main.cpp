@@ -11,8 +11,6 @@
 // тогда поражение, + отображать сытость
 // (V) 8. Начальное значени сытости - 25
 
-#define CELLSIZE_M 10
-#define CELLSIZE_N 10
 #define CHANCE_FOOD 10
 
 #define ENERGY_MAX 100
@@ -31,8 +29,13 @@ int main() {
             {Textures::ID::Texture_Snow, "assets/snow.png"},
             {Textures::ID::Texture_Stone, "assets/stone.png"},
             {Textures::ID::Texture_Water, "assets/water.png"},
+            {Textures::ID::Texture_EvilGuy, "assets/evil_guy.png"},
+    };
+    const std::map<Fonts::ID, std::string> fontPaths{
+            {Fonts::ID::Arial, "assets/Arial.ttf"},
+
     };
 
-    Game game(resourcePaths, CELLSIZE_M, CELLSIZE_N);
+    Game game(resourcePaths, fontPaths, 10, 10);
     game.run();
 }

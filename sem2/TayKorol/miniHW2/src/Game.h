@@ -20,11 +20,10 @@
 // тогда поражение, + отображать сытость
 // (V) 8. Начальное значени сытости - 25
 
-#define CELLSIZE_M 10
-#define CELLSIZE_N 10
 #define CHANCE_FOOD 10
-
-#define ENERGY_MAX 100
+#define CHANCE_ENEMY 10
+#define HP_START 10
+#define ENERGY_START 40
 
 #define CELLSIZE_SCREEN 100.f
 
@@ -32,7 +31,8 @@
 class Game {
 
 public:
-    Game(const std::map<Textures::ID, std::string> &resourcePaths, int width, int length);
+    Game(const std::map<Textures::ID, std::string> &resourcePaths,
+         const std::map<Fonts::ID, std::string> &fontPaths, int width, int length);
 
     void run();
 
@@ -41,56 +41,39 @@ private:
     struct Cell {
         bool isHidden;
         bool isFood;
+        bool hasEnemy = false;
         Textures::ID cellType;
     };
+
 private:
+
+
     size_t width, length;
     sf::RenderWindow window;
-    int energy;
+    int energy = ENERGY_START;
+    int hp = HP_START;
     std::vector<std::vector<Cell>> cells{width, std::vector<Cell>(length)};
+    std::vector<std::vector<sf::RectangleShape>> tiles{width, std::vector<sf::RectangleShape>(length)};
+
     sf::Font arial_font;
     ResourceHolder<sf::Texture, Textures::ID> textures;
+    ResourceHolder<sf::Font, Fonts::ID> fonts;
+    sf::Text textEnergy;
+    sf::Text textCondition;
+    sf::Text textHP;
 
+    bool isWon() const;
 
-    bool isWinOfGame() {
-        bool winCondition = true;
-        for (int x = 0; x < CELLSIZE_M; x++) {
-            for (int y = 0; y < CELLSIZE_N; y++) {
-                if (cells[x][y].isHidden) {
-                    winCondition = false;
-                    break;
-                }
-            }
-        }
-        return winCondition;
-    }
+    bool isLost() const;
 
-    bool isLoseOfGame() {
-        return energy <= 0;
-    }
+    void clickTile(const sf::Vector2i &mouseCoord);
 
-    void clickTile(const sf::Vector2i &mouseCoord,
-                   sf::RectangleShape shapes[CELLSIZE_M][CELLSIZE_N]) {
+    void set_text_style();
 
-        const int x = mouseCoord.x < 0 ?
-                      0 :
-                      mouseCoord.x > CELLSIZE_SCREEN * CELLSIZE_M ?
-                      CELLSIZE_M :
-                      mouseCoord.x / CELLSIZE_SCREEN;
+    void generate_cells(std::mt19937 &gen);
 
-        const int y = mouseCoord.y < 0 ?
-                      0 :
-                      mouseCoord.y > CELLSIZE_SCREEN * CELLSIZE_N ?
-                      CELLSIZE_N :
-                      mouseCoord.y / CELLSIZE_SCREEN;
+    void make_shapes();
 
-        cells[x][y].isHidden = false;
-
-        if (cells[x][y].isFood) {
-            shapes[x][y].setTexture(&textures.get(Textures::ID::Texture_Soup));
-            energy = ENERGY_MAX;
-        } else
-            shapes[x][y].setTexture(&textures.get(cells[x][y].cellType));
-    }
+    void update_txt();
 };
 
