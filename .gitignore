@@ -1,0 +1,6 @@
+/sem2/TayKorol/miniHW2/CMakeLists.txt
+.idea
+*.xml
+
+/sem2/TayKorol/miniHW2/cmake-build-debug/
+/cmake-build-debug/
